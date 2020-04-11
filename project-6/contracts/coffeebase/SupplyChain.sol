@@ -9,20 +9,20 @@ import "../coffeeaccesscontrol/RetailerRole.sol";
 contract SupplyChain is ConsumerRole, DistributorRole, FarmerRole, RetailerRole {
 
   // Define 'owner'
-  address owner;
+  address internal owner;
 
   // Define a variable called 'upc' for Universal Product Code (UPC)
-  uint  upc;
+  uint internal upc;
 
   // Define a variable called 'sku' for Stock Keeping Unit (SKU)
-  uint  sku;
+  uint internal sku;
 
   // Define a public mapping 'items' that maps the UPC to an Item.
-  mapping (uint => Item) items;
+  mapping (uint => Item) internal items;
 
   // Define a public mapping 'itemsHistory' that maps the UPC to an array of TxHash, 
   // that track its journey through the supply chain -- to be sent from DApp.
-  mapping (uint => string[]) itemsHistory;
+  mapping (uint => string[]) internal itemsHistory;
   
   // Define enum 'State' with the following values:
   enum State 
@@ -37,7 +37,7 @@ contract SupplyChain is ConsumerRole, DistributorRole, FarmerRole, RetailerRole 
     Purchased   // 7
     }
 
-  State constant defaultState = State.Harvested;
+  State constant internal defaultState = State.Harvested;
 
   // Define a struct 'Item' with the following fields:
   struct Item {
@@ -152,14 +152,14 @@ contract SupplyChain is ConsumerRole, DistributorRole, FarmerRole, RetailerRole 
   }
 
   // Define a function 'kill' if required
-  function kill() public {
+  function kill() external {
     if (msg.sender == owner) {
       selfdestruct(address(uint160(owner)));
     }
   }
 
   // Define a function 'harvestItem' that allows a farmer to mark an item 'Harvested'
-  function harvestItem(uint _upc, address _originFarmerID, string memory _originFarmName, string memory _originFarmInformation, string memory _originFarmLatitude, string memory _originFarmLongitude, string memory _productNotes) public 
+  function harvestItem(uint _upc, address _originFarmerID, string _originFarmName, string _originFarmInformation, string _originFarmLatitude, string _originFarmLongitude, string _productNotes) external 
   onlyFarmer
   {
     // Add the new item as part of Harvest
@@ -188,11 +188,11 @@ contract SupplyChain is ConsumerRole, DistributorRole, FarmerRole, RetailerRole 
   }
 
   // Define a function 'processtItem' that allows a farmer to mark an item 'Processed'
-  function processItem(uint _upc) public 
+  function processItem(uint _upc) external 
   // Call modifier to check if upc has passed previous supply chain stage
-  onlyFarmer
-  // Call modifier to verify caller of this function
   harvested(_upc)
+  // Call modifier to verify caller of this function
+  onlyFarmer
   {
     // Update the appropriate fields
     items[_upc].itemState = State.Processed;
@@ -201,11 +201,11 @@ contract SupplyChain is ConsumerRole, DistributorRole, FarmerRole, RetailerRole 
   }
 
   // Define a function 'packItem' that allows a farmer to mark an item 'Packed'
-  function packItem(uint _upc) public 
+  function packItem(uint _upc) external 
   // Call modifier to check if upc has passed previous supply chain stage
-  onlyFarmer
-  // Call modifier to verify caller of this function
   processed(_upc)
+  // Call modifier to verify caller of this function
+  onlyFarmer
   {
     // Update the appropriate fields
     items[_upc].itemState = State.Packed;
@@ -214,11 +214,11 @@ contract SupplyChain is ConsumerRole, DistributorRole, FarmerRole, RetailerRole 
   }
 
   // Define a function 'sellItem' that allows a farmer to mark an item 'ForSale'
-  function sellItem(uint _upc, uint _price) public 
+  function sellItem(uint _upc, uint _price) external 
   // Call modifier to check if upc has passed previous supply chain stage
-  onlyFarmer
-  // Call modifier to verify caller of this function
   packed(_upc)
+  // Call modifier to verify caller of this function
+  onlyFarmer
   {
     // Update the appropriate fields
     items[_upc].itemState = State.ForSale;
@@ -230,7 +230,7 @@ contract SupplyChain is ConsumerRole, DistributorRole, FarmerRole, RetailerRole 
   // Define a function 'buyItem' that allows the disributor to mark an item 'Sold'
   // Use the above defined modifiers to check if the item is available for sale, if the buyer has paid enough, 
   // and any excess ether sent is refunded back to the buyer
-  function buyItem(uint _upc) public payable 
+  function buyItem(uint _upc) external payable 
     onlyDistributor
     // Call modifier to check if upc has passed previous supply chain stage
     forSale(_upc)
@@ -254,7 +254,7 @@ contract SupplyChain is ConsumerRole, DistributorRole, FarmerRole, RetailerRole 
 
   // Define a function 'shipItem' that allows the distributor to mark an item 'Shipped'
   // Use the above modifers to check if the item is sold
-  function shipItem(uint _upc) public 
+  function shipItem(uint _upc) external 
     // Call modifier to check if upc has passed previous supply chain stage
     sold(_upc)
     // Call modifier to verify caller of this function
@@ -268,7 +268,7 @@ contract SupplyChain is ConsumerRole, DistributorRole, FarmerRole, RetailerRole 
 
   // Define a function 'receiveItem' that allows the retailer to mark an item 'Received'
   // Use the above modifiers to check if the item is shipped
-  function receiveItem(uint _upc) public 
+  function receiveItem(uint _upc) external 
     
     // Call modifier to check if upc has passed previous supply chain stage
     shipped(_upc)
@@ -286,7 +286,7 @@ contract SupplyChain is ConsumerRole, DistributorRole, FarmerRole, RetailerRole 
 
   // Define a function 'purchaseItem' that allows the consumer to mark an item 'Purchased'
   // Use the above modifiers to check if the item is received
-  function purchaseItem(uint _upc) public 
+  function purchaseItem(uint _upc) external 
     // Call modifier to check if upc has passed previous supply chain stage
     received(_upc)
     // Access Control List enforced by calling Smart Contract / DApp
@@ -301,7 +301,7 @@ contract SupplyChain is ConsumerRole, DistributorRole, FarmerRole, RetailerRole 
   }
 
   // Define a function 'fetchItemBufferOne' that fetches the data
-  function fetchItemBufferOne(uint _upc) public view returns 
+  function fetchItemBufferOne(uint _upc) external view returns 
   (
   uint    itemSKU,
   uint    itemUPC,
@@ -337,7 +337,7 @@ contract SupplyChain is ConsumerRole, DistributorRole, FarmerRole, RetailerRole 
   }
 
   // Define a function 'fetchItemBufferTwo' that fetches the data
-  function fetchItemBufferTwo(uint _upc) public view returns
+  function fetchItemBufferTwo(uint _upc) external view returns
   (
   uint    itemSKU,
   uint    itemUPC,

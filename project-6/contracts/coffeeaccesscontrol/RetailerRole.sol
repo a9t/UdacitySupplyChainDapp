@@ -12,7 +12,7 @@ contract RetailerRole {
   event RetailerRemoved(address indexed account);
 
   // Define a struct 'retailers' by inheriting from 'Roles' library, struct Role
-  Roles.Role private retailers;
+  Roles.Role internal retailers;
 
   // In the constructor make the address that deploys this contract the 1st retailer
   constructor() public {
@@ -31,12 +31,12 @@ contract RetailerRole {
   }
 
   // Define a function 'addRetailer' that adds this role
-  function addRetailer(address account) public onlyRetailer {
+  function addRetailer(address account) external onlyRetailer {
     _addRetailer(account);
   }
 
   // Define a function 'renounceRetailer' to renounce this role
-  function renounceRetailer() public {
+  function renounceRetailer() external {
     _removeRetailer(msg.sender);
   }
 
